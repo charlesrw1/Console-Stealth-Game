@@ -1,7 +1,0 @@
-﻿  main.cpp
-C:\Users\charl\Desktop\DEV\Space-Rogue\main.cpp(38,27): warning C4018: '<': signed/unsigned mismatch
-C:\Users\charl\Desktop\DEV\Space-Rogue\main.cpp(73,25): warning C4018: '<': signed/unsigned mismatch
-C:\Users\charl\Desktop\DEV\Space-Rogue\main.cpp(75,29): warning C4018: '<': signed/unsigned mismatch
-C:\Users\charl\Desktop\DEV\Space-Rogue\main.cpp(98,38): warning C4018: '>=': signed/unsigned mismatch
-C:\Users\charl\Desktop\DEV\Space-Rogue\main.cpp(100,38): warning C4018: '>=': signed/unsigned mismatch
-  Space-Rogue.vcxproj -> C:\Users\charl\Desktop\DEV\Space-Rogue\Debug\Space-Rogue.exe
