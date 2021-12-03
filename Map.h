@@ -1,38 +1,43 @@
 #include <vector>
 #include <string>
-#include <Windows.h>
+#include "Utilities.h"
 #ifndef MAP_H
 #define MAP_H
-
 using namespace std;
-struct Color
-{
-    uint8_t r, g, b;
-};
-
 struct Cell
 {
     unsigned char content;
     bool is_watched : 1;
-    //Debugging
     bool is_path : 1;
     bool is_target : 1;
 };
+extern vector<Vec2> alert_exclamations;
 extern vector<vector<Cell>> map_data;
-extern vector<string>game_map;
-extern COORD player_location;
-extern bool game_running;
-inline Cell& GetCell(COORD pos) 
+extern Vec2 player_location;
+struct GameFlags {
+    bool running = true;
+    bool caught_flag = false;
+    bool all_guards_dead = false;
+    bool alerted_flag = false;
+    bool in_alert = false;
+    bool backstab = false;
+};
+extern GameFlags GFlags;
+inline Cell& GetCell(Vec2 pos) 
 { 
     return map_data.at(pos.Y).at(pos.X); 
 }
-inline bool MoveCollision(COORD pos)
+inline bool MoveCollision(Vec2 pos)
 {
     return GetCell(pos).content != ' ';
 }
-inline bool CheckCollision(COORD pos) 
+inline bool CheckCollision(Vec2 pos) 
 { 
     return GetCell(pos).content == '#' || GetCell(pos).content == 'G';
+}
+inline bool WallCollision(Vec2 pos)
+{
+    return GetCell(pos).content == '#';
 }
 
 #endif // !MAP_H

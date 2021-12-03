@@ -7,37 +7,17 @@
 
 struct Node
 {
-	Node(COORD pos, Node* parent = nullptr)
+	Node(Vec2 pos, Node* parent = nullptr)
 		: pos(pos), parent(parent) {}
 	
-	COORD pos;
+	Vec2 pos;
 	Node* parent;
 	float g = 0;
 	float h = 0;
 	float f = 0;
 };
-bool operator != (COORD c1, COORD c2)
-{
-	return !((c1.X == c2.X) && (c1.Y == c2.Y));
-}
-bool operator == (COORD c1, COORD c2)
-{
-	return (c1.X == c2.X) && (c1.Y == c2.Y);
-}
-COORD operator += (COORD c1, COORD c2)
-{
-	return { short(c1.X + c2.X), short(c1.Y + c2.Y) };
-}
-COORD operator + (COORD c1, COORD c2)
-{
-	return { short(c1.X + c2.X), short(c1.Y + c2.Y) };
-}
-float Distance(COORD c1, COORD c2)
-{
-	return pow(c1.X + c2.X, 2) + pow(c1.Y + c2.Y, 2);
-}
 
-Node* FindNode(COORD c1, const set<Node*>& nodes)
+Node* FindNode(Vec2 c1, const set<Node*>& nodes)
 {
 	Node* result = nullptr;
 	for (auto i : nodes) {
@@ -48,8 +28,7 @@ Node* FindNode(COORD c1, const set<Node*>& nodes)
 	}
 	return result;
 }
-COORD movement[4] = { {1,0},{-1,0},{0,1},{0,-1} };
-void Guard::AStar(COORD goal)
+void Guard::AStar(Vec2 goal)
 {
 	int counter = 0;
 	set<Node*> open_list;
@@ -85,7 +64,7 @@ void Guard::AStar(COORD goal)
 			break;
 		for (int i = 0; i < 4; i++)
 		{
-			COORD new_pos = current->pos += movement[i];
+			Vec2 new_pos = current->pos += movement[i];
 			if (CheckCollision(new_pos) || 
 				FindNode(new_pos, closed_list))
 				continue;
@@ -136,6 +115,8 @@ void Guard::NewWaypoint()
 void Guard::Move()
 {
 	//Guards waypoints may intersect, wait 2 turns if it resolves, else, go to next waypoint
+	if (current_spc_wpt < 0)
+		return; //crappy workaround, whatever
 	if (GetCell(specific_waypoints.at(current_spc_wpt)).content != 'G') {
 		GetCell(position).content = ' ';
 		GetCell(position).is_path = false;
@@ -146,23 +127,19 @@ void Guard::Move()
 		GetCell(position).content = 'G';
 		current_spc_wpt--;
 	}
-	else
+	else {
 		stuck_counter++;
-	if (stuck_counter > 2) {
-		NewWaypoint();
-		stuck_counter = 0;
+		if (stuck_counter > 2) {
+			NewWaypoint();
+			stuck_counter = 0;
+		}
 	}
 }
-void Guard::Patrol()
+bool Guard::BackFacing(Vec2 pos) const
 {
-	//Guard is at waypoint, make new one
-	if (current_spc_wpt == -1)
-		NewWaypoint();
-	Move();
-	if (ScanForPlayer())
-		SetChase();
+	return (position + movement[dir_facing]*-1)== pos;
 }
-void Guard::UpdateDirection(COORD new_pos)
+void Guard::UpdateDirection(Vec2 new_pos)
 {
 	dir_facing = 0;
 	if (new_pos.Y < position.Y)
@@ -176,8 +153,8 @@ void Guard::UpdateDirection(COORD new_pos)
 }
 void Guard::CastRays()
 {
-	//cast ray forwards
-	COORD box_pos = position+movement[dir_facing];
+	//cast ray forwards, maybe more later
+	Vec2 box_pos = position+movement[dir_facing];
 	for (auto i : view_cone_squares)
 		GetCell(i).is_watched = false;
 	view_cone_squares.clear();
@@ -198,10 +175,28 @@ bool Guard::ScanForPlayer()
 		return true;
 	for (auto i : view_cone_squares) {
 		if (i == player_location) {
+			alert_exclamations.push_back(position + Vec2({0,-1 }));
 			return true;
 		}
 	}
 	return false;
+}
+
+//Guard states
+
+void Guard::Patrol()
+{
+	//Guard is at waypoint, make new one
+	if (current_spc_wpt == -1) {
+		NewWaypoint();
+		sentry_timer = 3;
+		state = sentry;
+	}
+	Move();
+	if (ScanForPlayer()) {
+		SetChase();
+		GFlags.alerted_flag = true;
+	}
 }
 void Guard::Chase()
 {
@@ -211,6 +206,9 @@ void Guard::Chase()
 		current_spc_wpt = -1;
 		for (auto i : specific_waypoints)
 			GetCell(i).is_path = false;
+
+		if (ScanForPlayer())
+			GFlags.alerted_flag = true;
 	}
 	else {
 		for (auto i : specific_waypoints)
@@ -218,7 +216,17 @@ void Guard::Chase()
 		AStar(player_location);
 		current_spc_wpt = specific_waypoints.size() - 2;
 		if (specific_waypoints.size() < 3)
-			game_running = false;
+			GFlags.caught_flag = true;
 		Move();
+	}
+}
+void Guard::Sentry()
+{
+	sentry_timer--;
+	if (sentry_timer < 0)
+		state = patrol;
+	else if (ScanForPlayer()) {
+		SetChase();
+		GFlags.alerted_flag = true;
 	}
 }
