@@ -16,7 +16,6 @@ Vec2 player_location = { 1,1 };
 vector<vector<Cell>> map_data;
 vector<Guard*> game_guards;
 vector<Vec2> alert_exclamations;
-int screen_height;
 
 void DrawGameRules(int width)
 {
@@ -106,15 +105,17 @@ void DisplayMap()
         for (short j = 0; j < map_data.at(i).size(); j++)
         {
             if (GetCell({ j,i }).is_watched) 
-                frame_buffer.append(BgColor(150,0,0));
+                frame_buffer.append(BgColor(100,20,20));
             else if (GetCell({ j,i }).is_path) 
-                frame_buffer.append(BgColor(0,100,0));
+                frame_buffer.append(BgColor(0,70,0));
 
             if (GetCell({ j,i }).content == ' ' && GetCell({ j,i }).is_target)
-                frame_buffer.append(FgColor(0,190,0)).push_back('X');
+                frame_buffer.append(FgColor(0, 190, 0)).push_back('X');
             else if (GetCell({ j,i }).content == '@')
-                frame_buffer.append(FgColor(255,255,0)).push_back('@');
-            else 
+                frame_buffer.append(FgColor(255, 255, 0)).push_back('@');
+            else if (GetCell({ j,i }).content == 'G')
+                frame_buffer.append(FgColor(0xab, 0xdf, 0xe1)).push_back('G');
+            else
                 frame_buffer.push_back(GetCell({ j,i }).content);
 
             frame_buffer += Reset();
@@ -215,6 +216,7 @@ int main()
         printf("Failed console init");
         return -1;
     }
+    system("cls");
     InitMap();
     DisplayMap();
     while (GFlags.running) {

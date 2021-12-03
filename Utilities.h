@@ -2,6 +2,7 @@
 #define UTILITIES_H
 #include <Windows.h>
 #include <string>
+#define WIN32_LEAN_AND_MEAN
 
 struct Vec2
 {
@@ -42,7 +43,7 @@ inline wchar_t* charToWChar(const char* text)
 inline bool InitConsole()
 {
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTitle(charToWChar("Space-Rouge"));
+    SetConsoleTitle(charToWChar("Stealth Game"));
     DWORD dwMode = 0;
     if (!GetConsoleMode(hOut, &dwMode))
         return false;

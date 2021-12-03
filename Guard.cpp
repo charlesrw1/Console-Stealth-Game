@@ -3,7 +3,6 @@
 #include <cmath>
 #include <assert.h>
 #include <set>
-#include <iostream>
 
 struct Node
 {
@@ -130,6 +129,7 @@ void Guard::Move()
 	else {
 		stuck_counter++;
 		if (stuck_counter > 2) {
+			CleanUp();
 			NewWaypoint();
 			stuck_counter = 0;
 		}

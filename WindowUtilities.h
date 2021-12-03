@@ -2,6 +2,7 @@
 #define WINDOWUTILITIES_H
 #include <string>
 #include <Windows.h>
+#define WIN32_LEAN_AND_MEAN
 using namespace std;
 struct Color
 {
